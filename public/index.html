@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sniping & Fronrunning Bot</title>
+  <link rel="stylesheet" href="/public/main.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    body {
+      padding-top: 50px;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.34/dist/web3.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js"></script>
+  <div class="row general-setting">
+        <div class="col-sm-4">
+          <label for="pwd">Private Key:</label>
+          <input type="password" v-model="privateKey" id="pwd">
+        </div>
+        <div class="col-sm-4">
+          <label for="pwd">Contract:</label>
+          <input class="medium-input" v-model="contractAddr">
+    </div>
+  </div>
+  <div id="app" class="row">
+    <div class="col-lg-4">
+      <div class="container">
+        <div class="form-group">
+          <label for="pwd">Private Key:</label>
+          <input type="password" v-model="privateKey" id="pwd">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Contract:</label>
+          <input class="medium-input" v-model="contractAddr">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Node url:</label>
+          <input class="medium-input" v-model="nodeUrl">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Token A:</label>
+          <select name="tokens" id="tokens" @change="onSelectToken($event, 1)" v-model="tokenA">
+            <option value="0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c">BNB</option>
+            <option value="0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56">BUSD</option>
+            <option value="0x2170Ed0880ac9A755fd29B2688956BD959F933F8">ETH</option>
+            <option value="0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c">BTCB</option>
+            <option value="0x55d398326f99059ff775485246999027b3197955">BSC-USD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pwd">Token B:</label>
+          <select name="tokens" id="tokens" @change="onSelectToken($event, 2)" v-model="tokenB">
+            <option value="0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c">BNB</option>
+            <option value="0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56">BUSD</option>
+            <option value="0x2170Ed0880ac9A755fd29B2688956BD959F933F8">ETH</option>
+            <option value="0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c">BTCB</option>
+            <option value="0x55d398326f99059ff775485246999027b3197955">BSC-USD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pwd">Slippage:</label>
+          <input type="number" Placeholder="0.0" v-model="slippage" class="short-input">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Gas Price:</label>
+          <input type="number" Placeholder="0.0" v-model="gasPrice" class="short-input">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Gas Limit:</label>
+          <input type="number" Placeholder="0.0" v-model="gasLimit" class="short-input">
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" @click="setBotStatus()">{{botStatus}}</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="container">
+        <div class="form-group">
+          <label for="pwd">Private Key:</label>
+          <input type="password" v-model="privateKey" id="pwd">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Contract:</label>
+          <input class="medium-input" v-model="contractAddr">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Node url:</label>
+          <input class="medium-input" v-model="nodeUrl">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Token A:</label>
+          <select name="tokens" id="tokens" @change="onSelectToken($event, 1)" v-model="tokenA">
+            <option value="0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c">BNB</option>
+            <option value="0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56">BUSD</option>
+            <option value="0x2170Ed0880ac9A755fd29B2688956BD959F933F8">ETH</option>
+            <option value="0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c">BTCB</option>
+            <option value="0x55d398326f99059ff775485246999027b3197955">BSC-USD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pwd">Token B:</label>
+          <select name="tokens" id="tokens" @change="onSelectToken($event, 2)" v-model="tokenB">
+            <option value="0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c">BNB</option>
+            <option value="0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56">BUSD</option>
+            <option value="0x2170Ed0880ac9A755fd29B2688956BD959F933F8">ETH</option>
+            <option value="0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c">BTCB</option>
+            <option value="0x55d398326f99059ff775485246999027b3197955">BSC-USD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pwd">Slippage:</label>
+          <input type="number" Placeholder="0.0" v-model="slippage" class="short-input">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Gas Price:</label>
+          <input type="number" Placeholder="0.0" v-model="gasPrice" class="short-input">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Gas Limit:</label>
+          <input type="number" Placeholder="0.0" v-model="gasLimit" class="short-input">
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" @click="setBotStatus()">{{botStatus}}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        wss: null,
+        botStatus: 'Start Bot',
+        privateKey: '',
+        contractAddr: '',
+        nodeUrl: '',
+        tokenA: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+        tokenB: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+        slippage: 3,
+        gasPrice: 9,
+        gasLimit: 345684,
+        fullData: [],
+        pair: ''
+      },
+      methods: {
+        onSelectToken(event, mode) {
+          return
+          if (mode === 1) {
+            this.tokenA = event.target.value
+          } else {
+            this.tokenB = event.target.value
+          }
+        },
+        setBotStatus() {
+          if (this.wss !== null) {
+            var obj = {}
+            if (this.botStatus === "Start Bot") {
+              if (!this.privateKey) {
+                alert('private key should be provided')
+                return;
+              }
+              if (!this.nodeUrl) {
+                alert('Node url should be provided')
+                return;
+              }
+              //alert(web3.utils.isAddress('slsls'))
+              if (!Web3.utils.isAddress(this.contractAddr)) {
+                alert('contract address is not valid')
+                return;
+              }
+
+              if (!Web3.utils.isAddress(this.tokenA)) {
+                alert('token A address is not valid')
+                return;
+              }
+
+              if (!Web3.utils.isAddress(this.tokenB)) {
+                alert('token B address is not valid')
+                return;
+              }
+
+              if (this.tokenA === this.tokenB) {
+                alert('token A can not be same as token B')
+                return;
+              }
+              obj = { botStatus: this.botStatus, privateKey: this.privateKey, contractAddr: this.contractAddr, nodeUrl: this.nodeUrl, tokenA: this.tokenA, tokenB: this.tokenB, slippage: this.slippage.toString(), gasPrice: this.gasPrice.toString(), gasLimit: this.gasLimit.toString() };
+              //this.botStatus = "Stop Bot"
+            } else {
+              obj = { botStatus: false };
+              //this.botStatus = "Start Bot"
+            }
+            var str = JSON.stringify(obj);
+            this.wss.send(str);
+          }
+        }
+      },
+      mounted() {
+        if ("WebSocket" in window) {
+          var wss = new WebSocket("wss://" + window.location.hostname + ":" + window.location.port + "/connect/");
+          this.wss = wss;
+          wss.onopen = () => {
+            wss.send("connectRequest")
+          };
+
+          wss.onmessage = (evt) => {
+            var msg = evt.data
+            console.log(msg)
+            var obj = JSON.parse(msg);
+            if (obj.botStatus !== undefined) {
+              if (obj.privateKey)
+                this.privateKey = obj.privateKey
+
+              if (obj.contractAddr)
+                this.contractAddr = obj.contractAddr
+
+              if (obj.nodeUrl)
+                this.nodeUrl = obj.nodeUrl
+
+              if (obj.tokenA) {
+                this.tokenA = obj.tokenA
+              }
+
+              if (obj.tokenB) {
+                this.tokenB = obj.tokenB
+              }
+
+              if (obj.slippage)
+                this.slippage = obj.slippage
+
+              if (obj.gasPrice)
+                this.gasPrice = obj.gasPrice
+
+              if (obj.gasLimit)
+                this.gasLimit = obj.gasLimit
+
+              if (obj.botStatus === true)
+                this.botStatus = "Stop Bot"
+              else
+                this.botStatus = "Start Bot"
+            } else {
+              this.tokenA = obj.tokenA;
+              this.tokenB = obj.tokenB;
+              this.pair = obj.pair;
+
+              this.fullData.push({
+                tokenA: this.tokenA
+                , tokenB: this.tokenB
+                , pair: this.pair
+              })
+            }
+
+          };
+
+          wss.onclose = () => {
+            console.log('winsocket closed')
+            this.wss = null;
+            this.botStatus = "Start Bot"
+          };
+        } else {
+          console.log("WebSocket NOT supported by your Browser!");
+        }
+      }
+    })
+
+
+  </script>
+  <style>
+    .short-input {
+      width: 10%;
+      margin: 7px;
+    }
+  </style>
+</body>
+
+</html>
